@@ -2,14 +2,14 @@
 
 module Main where
 
-import Application.YesodCRUD.Server.Type
-import Application.YesodCRUD.Server.Yesod ()
+import Application.WebLogger.Server.Type
+import Application.WebLogger.Server.Yesod ()
 import Yesod
 import qualified Data.Map as M
 import Data.Acid 
 
 main :: IO ()
 main = do 
-  putStrLn "yesodcrud-server"
+  putStrLn "weblogger-server"
   acid <- openLocalState M.empty 
-  warpDebug 7800 (YesodcrudServer acid)
+  warpDebug 7800 (WebLoggerServer acid)

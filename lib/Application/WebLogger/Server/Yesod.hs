@@ -4,7 +4,7 @@
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Application.YesodCRUD.Server.Yesod where 
+module Application.WebLogger.Server.Yesod where 
 
 import           Control.Applicative
 import           Data.Acid
@@ -17,23 +17,23 @@ import           Data.UUID
 import           Network.Wai
 import           Yesod hiding (update)
 -- 
-import           Application.YesodCRUD.Type
-import           Application.YesodCRUD.Server.Type
+import           Application.WebLogger.Type
+import           Application.WebLogger.Server.Type
 
 
 
-mkYesod "YesodcrudServer" [parseRoutes|
+mkYesod "WebLoggerServer" [parseRoutes|
 / HomeR GET
-/listyesodcrud  ListYesodcrudR GET
-/uploadyesodcrud  UploadYesodcrudR POST
-/yesodcrud/#UUID YesodcrudR 
+/listyesodcrud  ListWebLoggerR GET
+/uploadyesodcrud  UploadWebLoggerR POST
+/yesodcrud/#UUID WebLoggerR 
 |]
 
-instance Yesod YesodcrudServer where
+instance Yesod WebLoggerServer where
   -- approot = ""
   maximumContentLength _ _ = 100000000
 
-{-instance RenderMessage YesodcrudServer FormMessage where
+{-instance RenderMessage WebLoggerServer FormMessage where
   renderMessage _ _ = defaultFormMessage -}
 
 
@@ -54,8 +54,8 @@ defhlet :: GWidget s m ()
 defhlet = [whamlet| <h1> HTML output not supported |]
 
 
-getListYesodcrudR :: Handler RepHtmlJson
-getListYesodcrudR = do 
+getListWebLoggerR :: Handler RepHtmlJson
+getListWebLoggerR = do 
   liftIO $ putStrLn "getQueueListR called" 
   acid <- return.server_acid =<< getYesod
   r <- liftIO $ query acid QueryAll
@@ -63,8 +63,8 @@ getListYesodcrudR = do
   defaultLayoutJson defhlet (A.toJSON (Just r))
 
 
-postUploadYesodcrudR :: Handler RepHtmlJson
-postUploadYesodcrudR = do 
+postUploadWebLoggerR :: Handler RepHtmlJson
+postUploadWebLoggerR = do 
   liftIO $ putStrLn "postQueueR called" 
   acid <- server_acid <$> getYesod
   wr <- reqWaiRequest <$> getRequest
@@ -73,46 +73,46 @@ postUploadYesodcrudR = do
   let parsed = parse json bs 
   case parsed of 
     Done _ parsedjson -> do 
-      case (A.fromJSON parsedjson :: A.Result YesodcrudInfo) of 
+      case (A.fromJSON parsedjson :: A.Result WebLoggerInfo) of 
         Success minfo -> do 
-          r <- liftIO $ update acid (AddYesodcrud minfo)
+          r <- liftIO $ update acid (AddWebLogger minfo)
           liftIO $ print (Just r)
           liftIO $ print (A.toJSON (Just r))
           defaultLayoutJson defhlet (A.toJSON (Just r))
         Error err -> do 
           liftIO $ putStrLn err 
-          defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+          defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
 
 
 
-handleYesodcrudR :: UUID -> Handler RepHtmlJson
-handleYesodcrudR name = do
+handleWebLoggerR :: UUID -> Handler RepHtmlJson
+handleWebLoggerR name = do
   wr <- return.reqWaiRequest =<< getRequest
   case requestMethod wr of 
-    "GET" -> getYesodcrudR name
-    "PUT" -> putYesodcrudR name
-    "DELETE" -> deleteYesodcrudR name
-    x -> error ("No such action " ++ show x ++ " in handlerYesodcrudR")
+    "GET" -> getWebLoggerR name
+    "PUT" -> putWebLoggerR name
+    "DELETE" -> deleteWebLoggerR name
+    x -> error ("No such action " ++ show x ++ " in handlerWebLoggerR")
 
-getYesodcrudR :: UUID -> Handler RepHtmlJson
-getYesodcrudR idee = do 
-  liftIO $ putStrLn "getYesodcrudR called"
+getWebLoggerR :: UUID -> Handler RepHtmlJson
+getWebLoggerR idee = do 
+  liftIO $ putStrLn "getWebLoggerR called"
   acid <- return.server_acid =<< getYesod
-  r <- liftIO $ query acid (QueryYesodcrud idee)
+  r <- liftIO $ query acid (QueryWebLogger idee)
   liftIO $ putStrLn $ show r 
   let hlet = [whamlet| <h1> File #{idee}|]
   defaultLayoutJson hlet (A.toJSON (Just r))
 
 
-putYesodcrudR :: UUID -> Handler RepHtmlJson
-putYesodcrudR idee = do 
-  liftIO $ putStrLn "putYesodcrudR called"
+putWebLoggerR :: UUID -> Handler RepHtmlJson
+putWebLoggerR idee = do 
+  liftIO $ putStrLn "putWebLoggerR called"
   acid <- server_acid <$> getYesod
   wr <- reqWaiRequest <$> getRequest
   bs' <- liftIO $ runResourceT (requestBody wr $$ CL.consume)
@@ -121,27 +121,27 @@ putYesodcrudR idee = do
   liftIO $ print parsed 
   case parsed of 
     Done _ parsedjson -> do 
-      case (A.fromJSON parsedjson :: A.Result YesodcrudInfo) of 
+      case (A.fromJSON parsedjson :: A.Result WebLoggerInfo) of 
         Success minfo -> do 
           if idee == yesodcrud_uuid minfo
-            then do r <- liftIO $ update acid (UpdateYesodcrud minfo)
+            then do r <- liftIO $ update acid (UpdateWebLogger minfo)
                     defaultLayoutJson defhlet (A.toJSON (Just r))
             else do liftIO $ putStrLn "yesodcrudname mismatched"
-                    defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+                    defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
         Error err -> do 
           liftIO $ putStrLn err 
-          defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+          defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
     Fail _ ctxts err -> do 
       liftIO $ putStrLn (concat ctxts++err)
-      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
          
     Partial _ -> do 
       liftIO $ putStrLn "partial" 
-      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe YesodcrudInfo))
+      defaultLayoutJson defhlet (A.toJSON (Nothing :: Maybe WebLoggerInfo))
 
-deleteYesodcrudR :: UUID -> Handler RepHtmlJson
-deleteYesodcrudR idee = do 
+deleteWebLoggerR :: UUID -> Handler RepHtmlJson
+deleteWebLoggerR idee = do 
   acid <- return.server_acid =<< getYesod
-  r <- liftIO $ update acid (DeleteYesodcrud idee)
+  r <- liftIO $ update acid (DeleteWebLogger idee)
   liftIO $ putStrLn $ show r 
   defaultLayoutJson defhlet (A.toJSON (Just r))

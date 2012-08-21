@@ -1,7 +1,7 @@
-Name:		yesodcrud-server
+Name:		weblogger-server
 Version:	0.0
-Synopsis:	CRUD sample server
-Description: 	CRUD sample server
+Synopsis:	simple weblogger server
+Description: 	simple weblogger server
 License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
@@ -9,8 +9,8 @@ Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
 Build-Type: 	Simple
 Cabal-Version:  >= 1.8
 
-Executable yesodcrud-server
-  Main-is: yesodcrud-server.hs
+Executable weblogger-server
+  Main-is: weblogger-server.hs
   hs-source-dirs: exe
   Build-Depends: base == 4.*, 
                  yesod == 1.1.*, 
@@ -18,20 +18,19 @@ Executable yesodcrud-server
                  bytestring == 0.9.*, 
                  containers == 0.4.*, 
                  acid-state == 0.6.*, 
-                 yesodcrud-type == 0.0.*,
-                 yesodcrud-server
-  ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+                 weblogger-type == 0.0.*,
+                 weblogger-server
+  ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind -fno-warn-orphans
   ghc-prof-options: -caf-all -auto-all
 
 Library
   hs-source-dirs: lib
-  ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind -fno-warn-orphans
   ghc-prof-options: -caf-all -auto-all
   Build-Depends: base == 4.*, 
                  containers == 0.4.*, 
                  mtl == 2.1.*, 
                  yesod == 1.1.*, 
-                 yesodcrud-type == 0.0.*, 
                  safecopy == 0.6.*, 
                  acid-state == 0.6.*, 
                  aeson == 0.6.*, 
@@ -45,10 +44,12 @@ Library
                  text == 0.11.*, 
                  yesod-core == 1.1.*, 
                  yesod-form == 1.1.*, 
-                 blaze-html == 0.5.*
+                 blaze-html == 0.5.*,
+                 weblogger-type == 0.0.* 
+
   Exposed-Modules: 
-                   Application.YesodCRUD.Server.Type
-                   Application.YesodCRUD.Server.Yesod
+                   Application.WebLogger.Server.Type
+                   Application.WebLogger.Server.Yesod
 
 
 
