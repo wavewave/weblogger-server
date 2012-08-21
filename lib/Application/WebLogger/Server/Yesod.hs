@@ -13,24 +13,30 @@ import           Data.Attoparsec as P
 import qualified Data.ByteString as S
 import           Data.Conduit 
 import qualified Data.Conduit.List as CL
+import           Data.Foldable
 import           Network.Wai
 import           Yesod hiding (update)
 -- 
 import           Application.WebLogger.Type
 import           Application.WebLogger.Server.Type
+-- 
+import           Prelude hiding (concat,concatMap)
 
 
-
+-- |
 mkYesod "WebLoggerServer" [parseRoutes|
 / HomeR GET
 /list ListR GET
 /upload UploadR POST
 |]
 
+
+-- |
 instance Yesod WebLoggerServer where
   maximumContentLength _ _ = 100000000
 
 
+-- |
 getHomeR :: Handler RepHtml 
 getHomeR = do 
   liftIO $ putStrLn "getHomeR called"
@@ -44,8 +50,32 @@ getHomeR = do
 |]
 
 
+-- |
 defhlet :: GWidget s m ()
 defhlet = [whamlet| <h1> HTML output not supported |]
+
+
+-- | 
+showstr :: String -> GWidget s m () 
+showstr str  = [whamlet| 
+<h1> output 
+<p> #{str}
+|]
+
+
+-- | 
+formatLog :: WebLoggerRepo -> GWidget s m () 
+formatLog xs = [whamlet| 
+<h1> output
+<table> 
+  <tr> 
+    <td> log
+  $forall x <- xs 
+    <tr> 
+      <td> #{weblog_content x}
+|]
+
+--  concatMap (\x -> weblog_content x ++ "\n\n") (toList xs)
 
 
 -- |
@@ -56,8 +86,8 @@ getListR = do
   liftIO $ putStrLn "getListR called" 
   acid <- server_acid <$> getYesod
   r <- liftIO $ query acid QueryAllLog
-  liftIO $ putStrLn $ show r 
-  defaultLayoutJson defhlet (A.toJSON (Just r))
+  -- liftIO $ putStrLn $ show r 
+  defaultLayoutJson (formatLog r) (A.toJSON (Just r))
 
 
 -- | 
